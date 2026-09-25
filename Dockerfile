@@ -2,20 +2,23 @@ FROM ubuntu:24.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Update & upgrade + install Python and pip
 RUN apt-get update && \
     apt-get upgrade -y && \
     apt-get install -y \
         python3 \
         python3-pip \
         curl \
-        ca-certificates && \
+        ca-certificates \
+        bash && \
     rm -rf /var/lib/apt/lists/*
 
-# Install sshx
-RUN curl -sSf https://sshx.io/get | sh
+# Install ttyd
+RUN curl -L https://github.com/tsl0922/ttyd/releases/latest/download/ttyd.x86_64 \
+    -o /usr/local/bin/ttyd && \
+    chmod +x /usr/local/bin/ttyd
 
 WORKDIR /app
 
-# Start Python HTTP server and sshx
-CMD sh -c 'python3 -m http.server ${PORT:-10000} --bind 0.0.0.0 & sshx'
+EXPOSE 10000
+
+CMD ["sh", "-c", "exec ttyd -p ${PORT:-10000} bash"]
