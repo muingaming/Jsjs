@@ -19,6 +19,4 @@ RUN curl -L https://github.com/tsl0922/ttyd/releases/latest/download/ttyd.x86_64
 
 WORKDIR /app
 
-EXPOSE 10000
-
-CMD ["sh", "-c", "exec ttyd -p ${PORT:-10000} bash"]
+CMD ["sh", "-c", "exec ttyd --writable -p ${PORT:-10000} /bin/bash"]
