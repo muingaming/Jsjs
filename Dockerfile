@@ -1,27 +1,25 @@
 FROM ubuntu:24.04
 
 ENV DEBIAN_FRONTEND=noninteractive
-ENV DISPLAY=:1
 
-RUN apt-get update && apt-get install -y \
-    xfce4 \
-    xfce4-terminal \
-    tigervnc-standalone-server \
-    novnc \
-    websockify \
-    dbus-x11 \
-    python3 \
-    python3-pip \
-    sudo \
-    && rm -rf /var/lib/apt/lists/*
+# Update system and install required packages
+RUN apt-get update && \
+    apt-get upgrade -y && \
+    apt-get install -y \
+        curl \
+        git \
+        python3 \
+        python3-pip \
+        ca-certificates \
+        bash \
+        sudo && \
+    rm -rf /var/lib/apt/lists/*
 
-RUN mkdir -p /root/.vnc && \
-    printf '#!/bin/sh\nstartxfce4 &\n' > /root/.vnc/xstartup && \
-    chmod +x /root/.vnc/xstartup
+# Install code-server
+RUN curl -fsSL https://code-server.dev/install.sh | sh
 
-WORKDIR /app
+# Working directory
+WORKDIR /workspace
 
-COPY start.sh /app/start.sh
-RUN chmod +x /app/start.sh
-
-CMD ["/app/start.sh"]
+# Start code-server
+CMD ["sh", "-c", "mkdir -p /root/.config/code-server && printf '%s\\n' 'auth: password' 'password: muin' 'cert: false' \"bind-addr: 0.0.0.0:${PORT:-10000}\" > /root/.config/code-server/config.yaml && exec code-server /workspace"]
