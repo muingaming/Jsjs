@@ -1,22 +1,27 @@
 FROM ubuntu:24.04
 
 ENV DEBIAN_FRONTEND=noninteractive
+ENV DISPLAY=:1
 
-RUN apt-get update && \
-    apt-get upgrade -y && \
-    apt-get install -y \
-        python3 \
-        python3-pip \
-        curl \
-        ca-certificates \
-        bash && \
-    rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y \
+    xfce4 \
+    xfce4-terminal \
+    tigervnc-standalone-server \
+    novnc \
+    websockify \
+    dbus-x11 \
+    python3 \
+    python3-pip \
+    sudo \
+    && rm -rf /var/lib/apt/lists/*
 
-# Install ttyd
-RUN curl -L https://github.com/tsl0922/ttyd/releases/latest/download/ttyd.x86_64 \
-    -o /usr/local/bin/ttyd && \
-    chmod +x /usr/local/bin/ttyd
+RUN mkdir -p /root/.vnc && \
+    printf '#!/bin/sh\nstartxfce4 &\n' > /root/.vnc/xstartup && \
+    chmod +x /root/.vnc/xstartup
 
 WORKDIR /app
 
-CMD ["sh", "-c", "exec ttyd --writable -p ${PORT:-10000} /bin/bash"]
+COPY start.sh /app/start.sh
+RUN chmod +x /app/start.sh
+
+CMD ["/app/start.sh"]
